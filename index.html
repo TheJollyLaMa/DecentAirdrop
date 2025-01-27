@@ -5,64 +5,86 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="./assets/umbrella.png" type="image/x-icon">
   <title>Decent Airdrop</title>
-  <link rel="stylesheet" href="styles/styles.css">
+  <link rel="stylesheet" href="styles/general.css">
+  <link rel="stylesheet" href="styles/components.css">
 </head>
 <body>
   <!-- Title and Wallet Display -->
   <header class="header">
     <div class="centered-title">
-        <!-- Title -->
-        <div class="title">
-            <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
-            <h1> - ⸬ - Decent ☂ Airdrop - ⸬ -</h1>
-            <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
-
-        </div>
-
-        <!-- Connected Wallet Address -->
-        <div id="wallet-display" class="wallet-display">
-            <span id="wallet-address-start">0x0000</span>
-            <div class="icons">
-            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
-            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
-            <img src="./assets/SecretPyramid.png" alt="Secret Pyramid Icon" class="icon">
-            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
-            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
-            </div>
-            <span id="wallet-address-end">0000</span>
-        </div>
-
+      <div class="title">
+        <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
+        <h1> - ⸬ - Decent ☂ Airdrop - ⸬ -</h1>
+        <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
+      </div>
+      <div class="wallet-display">
+        <span id="wallet-address-start">0x0000</span>
+        <span class="icons">
+          <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+          <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+          <img src="./assets/SecretPyramid.png" alt="Pyramid Icon" class="icon">
+          <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+          <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+        </span>
+        <span id="wallet-address-end">0000</span>
+      </div>
     </div>
+    <button id="connect-wallet" class="wallet-button">
+      <img src="./assets/metamask.png" alt="MetaMask" />
+    </button>
   </header>
 
-  <button id="connect-wallet" class="wallet-button">
-    <img src="./assets/metamask.png" alt="MetaMask" />
-  </button>
+  <!-- Scrollable Content -->
+  <div class="scrollable-content">
+    <div class="container">
+        <div id="chain-icon-wrapper">
+            <img id="chain-icon" src="./assets/Optimism.png" alt="Chain Icon" />
+        </div>
 
-  <div class="container">
-    <div id="chain-icon-wrapper">
-      <img id="chain-icon" src="./assets/Optimism.png" alt="Chain Icon" />
+        <form id="airdrop-form">
+            <h1>MetaMask Airdrop</h1>
+            <!-- New Section for Native Coin Amount -->
+            <div id="native-currency-section">
+                <label for="native-coin-amount">Amount of native coin to send</label>
+                <input type="number" id="native-coin-amount" placeholder="Enter native coin amount" />
+                <div id="native-coin-symbol"></div> <!-- Display current network's native coin -->
+            </div>
+            
+            <br><hr><br>
+            <!-- Token Dropdown and Amount Input -->
+            <div id="tokens-container">
+                <div class="token-input-container">
+                    <select id="tokens-dropdown" class="tokens-dropdown"></select>
+                    <input type="text" placeholder="Token Amount" />
+                    <button class="delete-button">🗑️</button>
+                </div>
+            </div>
+            
+            <button type="button" id="add-token">Add Token</button>
+            <br><hr><br>
+            
+            <!-- Wallet Inputs -->
+            <div id="wallets-container">
+                <div class="wallet-input-container">
+                    <input type="text" placeholder="Enter Wallet Address" />
+                    <button class="delete-button">🗑️</button>
+                </div>
+            </div>
+            <button type="button" id="add-wallet">Add Wallet</button>
+            <br><hr><br>
+            
+            <button type="button" id="send-airdrop">Send Airdrop</button>
+        </form>
+
+        <p id="status"></p>
+    
     </div>
-
-    <form id="airdrop-form">
-      <h1>MetaMask Multi-Token & ETH Airdrop</h1>
-      <div id="tokens-container">
-        <label for="tokens">Token Contract Address:</label>
-        <select id="tokens-dropdown">
-          <option value="">Select a token</option>
-        </select>
-        <label for="amount">Token Amount:</label>
-        <input type="text" id="token-amount" placeholder="Enter Token Amount">
-      </div>
-      <button type="button" id="add-token">Add Token</button>
-      <div id="wallets-container"></div>
-      <button type="button" id="add-wallet">Add Wallet</button>
-      <button type="button" id="send-airdrop">Send Airdrop</button>
-    </form>
-    <p id="status"></p>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-  <script type="module" src="scripts/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script type="module" src="scripts/app.js"></script>
+    <script type="module" src="scripts/tokenList.js"></script>
+    <script type="module" src="scripts/walletList.js"></script>
+    <script type="module" src="scripts/nativeCurrency.js"></script>
 </body>
 </html>

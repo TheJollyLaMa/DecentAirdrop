@@ -1,110 +1,149 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const tokensDropdown = document.getElementById("tokens-dropdown");
-    const chainIcon = document.getElementById("chain-icon");
     const connectWalletButton = document.getElementById("connect-wallet");
-    const tokensContainer = document.getElementById("tokens-container");
-    const walletsContainer = document.getElementById("wallets-container");
-    const addTokenButton = document.getElementById("add-token");
-    const addWalletButton = document.getElementById("add-wallet");
-    const sendAirdropButton = document.getElementById("send-airdrop");
-    const status = document.getElementById("status");
-  
-    const tokens = [];
-    const wallets = [];
+    const walletAddressStart = document.getElementById("wallet-address-start");
+    const walletAddressEnd = document.getElementById("wallet-address-end");
+    const chainIcon = document.getElementById("chain-icon");
+    const tokensDropdown = document.getElementById("tokens-dropdown");
+
     let connected = false;
-  
-    // Placeholder for wallet address
     let walletAddress;
-  
-    // Helper function to format token addresses
-    const formatAddress = (address) => {
-      const first6 = address.slice(0, 6);
-      const last4 = address.slice(-4);
-      return `${first6}...${last4}`;
+
+    // Function to detect the current chain
+    const detectChain = async () => {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const network = await provider.getNetwork();
+            console.log("Network detected:", network); // Log full network details
+            return network.chainId; // Return the chain ID
+        } catch (error) {
+            console.error("Error detecting chain:", error);
+            return null; // Return null if detection fails
+        }
     };
-  
+
+    // Function to update wallet display
     const updateWalletDisplay = () => {
-        const walletAddressStart = document.getElementById("wallet-address-start");
-        const walletAddressEnd = document.getElementById("wallet-address-end");
-    
         if (connected && walletAddress) {
-            // Split the wallet address
             walletAddressStart.textContent = walletAddress.slice(0, 6);
             walletAddressEnd.textContent = walletAddress.slice(-4);
-        } else {
-            // Default value when not connected
-            walletAddressStart.textContent = "0x0000";
-            walletAddressEnd.textContent = "0000";
+        }
+    };
+
+    // Function to update chain icon
+    const updateChainIcon = async () => {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+    
+        try {
+            const network = await provider.getNetwork();
+            const chainId = network.chainId;
+            console.log("Detected Chain ID:", chainId); // Log detected chain ID
+    
+            const chainIcons = {
+                1: "./assets/Ethereum.png",  // Ethereum Mainnet
+                137: "./assets/Polygon.png", // Polygon
+                10: "./assets/Optimism.png", // Optimism
+            };
+    
+            const iconSrc = chainIcons[chainId] || "./assets/Unknown.png";
+            const chainIcon = document.getElementById("chain-icon");
+            chainIcon.src = iconSrc; // Update the chain icon
+            console.log("Chain Icon Updated to:", iconSrc);
+        } catch (error) {
+            console.error("Error updating chain icon:", error);
+        }
+    };
+
+    const switchToNetwork = async (chainId) => {
+        const networkParams = {
+            1: {
+                chainId: "0x1",
+                chainName: "Ethereum Mainnet",
+                rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"],
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            },
+            10: {
+                chainId: "0xa",
+                chainName: "Optimism",
+                rpcUrls: ["https://mainnet.optimism.io"],
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            },
+            137: {
+                chainId: "0x89",
+                chainName: "Polygon Mainnet",
+                rpcUrls: ["https://polygon-rpc.com"],
+                nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
+            },
+        };
+    
+        const network = networkParams[chainId];
+        if (!network) {
+            console.error("Unsupported chain ID:", chainId);
+            return;
+        }
+    
+        try {
+            await window.ethereum.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: network.chainId }],
+            });
+            console.log(`Switched to ${network.chainName}`);
+        } catch (error) {
+            console.error(`Error switching to ${network.chainName}:`, error);
+            if (error.code === 4902) {
+                console.log(`Network ${network.chainName} not found. Adding it...`);
+                try {
+                    await window.ethereum.request({
+                        method: "wallet_addEthereumChain",
+                        params: [network],
+                    });
+                    console.log(`Added and switched to ${network.chainName}`);
+                } catch (addError) {
+                    console.error(`Failed to add network ${network.chainName}:`, addError);
+                }
+            }
         }
     };
     
-    // Update connectWallet function to call updateWalletDisplay
     const connectWallet = async () => {
+        const walletButton = document.getElementById("connect-wallet");
+    
         if (!window.ethereum) {
             alert("MetaMask is not installed!");
             return;
         }
     
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        walletAddress = accounts[0];
-        console.log("Connected Wallet Address:", walletAddress);
-        connected = true;
-        updateWalletButton();
-        updateWalletDisplay();
-        await fetchTokens(walletAddress);
-    };
-  
-    // Function to fetch wallet tokens
-    const fetchTokens = async (walletAddress) => {
-      console.log("Fetching tokens for wallet:", walletAddress);
-  
-      // Simulate fetching tokens from wallet (replace with actual API logic)
-      const tokenList = [
-        { address: "0xSHTAddress", symbol: "SHT", icon: "./assets/SHT.png", balance: "100" },
-        { address: "0xUSDGLOAddress", symbol: "USDGLO", icon: "./assets/USDGLO.png", balance: "50" },
-        { address: "0xETHAddress", symbol: "ETH", icon: "./assets/ETH.gif", balance: "0.5" },
-      ];
-  
-      tokensDropdown.innerHTML = '<option value="">Select a token</option>';
-      tokenList.forEach((token) => {
-        const option = document.createElement("option");
-        option.value = token.address;
-        option.innerHTML = `
-          <span>${token.symbol} (${formatAddress(token.address)})</span>
-          <img src="${token.icon}" alt="${token.symbol}" style="width: 20px; height: 20px; margin-left: 5px;">
-        `;
-        tokensDropdown.appendChild(option);
-      });
-  
-      console.log("Tokens fetched and populated in the dropdown:", tokenList);
-    };
-  
-    // Update wallet button style based on connection status
-    const updateWalletButton = () => {
-        if (connected) {
-          connectWalletButton.classList.add("connected");
-          connectWalletButton.classList.remove("disconnected");
-        } else {
-          connectWalletButton.classList.add("disconnected");
-          connectWalletButton.classList.remove("connected");
+        try {
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            walletAddress = accounts[0];
+            connected = true;
+    
+            // Switch to Optimism by default (or your target network)
+            const targetChainId = 10; // Optimism chain ID
+            await switchToNetwork(targetChainId);
+    
+            // Update UI
+            updateWalletDisplay();
+            await updateChainIcon(); // Ensure the chain icon updates here
+    
+            // Set button state to "connected"
+            walletButton.classList.add("connected");
+            walletButton.classList.remove("disconnected");
+    
+            console.log("Wallet Connected:", walletAddress);
+    
+            // Populate tokens
+            const tokensDropdown = document.getElementById("tokens-dropdown");
+            if (typeof window.updateTokenDropdown === "function") {
+                window.updateTokenDropdown(tokensDropdown);
+            }
+        } catch (error) {
+            console.error("Error connecting wallet:", error);
+    
+            // Set button state to "disconnected"
+            walletButton.classList.remove("connected");
+            walletButton.classList.add("disconnected");
         }
-      };
-  
-    // Function to fetch chain and display chain icon
-    const detectChain = async () => {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const network = await provider.getNetwork();
-      if (network.chainId === 10) {
-        chainIcon.src = "./assets/Optimism.png";
-      } else if (network.chainId === 137) {
-        chainIcon.src = "./assets/Polygon.png";
-      }
     };
-  
-    // Attach event listeners
+
     connectWalletButton.addEventListener("click", connectWallet);
-  
-    // Initialize
-    detectChain();
-    updateWalletButton();
-  });
+});

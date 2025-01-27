@@ -1,0 +1,55 @@
+/* General Body and Background Styling */
+body {
+    font-family: "Chalkduster", cursive;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    height: 100vh;
+    background: url('../assets/umbrella.png') no-repeat center center fixed;
+    background-size: 100% 110%;
+    background-color: rgba(0, 0, 0, 0.6);
+    background-blend-mode: overlay;
+    overflow: auto;
+}
+
+/* Header Styles */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 255, 255, 0.5);
+    z-index: 20;
+    color: #fff;
+    font-family: "Chalkduster", cursive;
+    text-align: center;
+}
+
+/* Centered Title */
+.centered-title {
+    display: inline-block;
+    text-align: center;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.title img.favicon {
+    width: 40px;
+    height: 40px;
+}
+
+.title h1 {
+    font-size: 24px;
+    color: #00ffff;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    margin: 0;
+}
