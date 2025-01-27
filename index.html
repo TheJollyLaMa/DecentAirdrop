@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./assets/umbrella.png" type="image/x-icon">
+  <title>Decent Airdrop</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+  <!-- Title and Wallet Display -->
+  <header class="header">
+    <div class="centered-title">
+        <!-- Title -->
+        <div class="title">
+            <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
+            <h1> - ⸬ - Decent ☂ Airdrop - ⸬ -</h1>
+            <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
+
+        </div>
+
+        <!-- Connected Wallet Address -->
+        <div id="wallet-display" class="wallet-display">
+            <span id="wallet-address-start">0x0000</span>
+            <div class="icons">
+            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+            <img src="./assets/SecretPyramid.png" alt="Secret Pyramid Icon" class="icon">
+            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+            <img src="./assets/ETH.gif" alt="ETH Icon" class="icon">
+            </div>
+            <span id="wallet-address-end">0000</span>
+        </div>
+
+    </div>
+  </header>
+
+  <button id="connect-wallet" class="wallet-button">
+    <img src="./assets/metamask.png" alt="MetaMask" />
+  </button>
+
+  <div class="container">
+    <div id="chain-icon-wrapper">
+      <img id="chain-icon" src="./assets/Optimism.png" alt="Chain Icon" />
+    </div>
+
+    <form id="airdrop-form">
+      <h1>MetaMask Multi-Token & ETH Airdrop</h1>
+      <div id="tokens-container">
+        <label for="tokens">Token Contract Address:</label>
+        <select id="tokens-dropdown">
+          <option value="">Select a token</option>
+        </select>
+        <label for="amount">Token Amount:</label>
+        <input type="text" id="token-amount" placeholder="Enter Token Amount">
+      </div>
+      <button type="button" id="add-token">Add Token</button>
+      <div id="wallets-container"></div>
+      <button type="button" id="add-wallet">Add Wallet</button>
+      <button type="button" id="send-airdrop">Send Airdrop</button>
+    </form>
+    <p id="status"></p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script type="module" src="scripts/app.js"></script>
+</body>
+</html>
