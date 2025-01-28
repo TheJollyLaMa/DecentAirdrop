@@ -1,0 +1,122 @@
+/* Form Styling */
+form input, form select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 100%;  /* Ensure input takes full container width */
+    max-width: 100%; /* Prevent stretching beyond container */
+    box-sizing: border-box; /* Prevent overflow */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Container Styling */
+.container {
+    position: relative;
+    background: rgba(0, 0, 0, 0.9); 
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    width: 400px;
+    text-align: center;
+    color: #fff;
+    overflow: visible;
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;  /* Center horizontally */
+    margin-right: auto; /* Center horizontally */
+}
+
+/* Fix chain icon placement */
+#chain-icon-wrapper {
+    position: absolute;
+    top: -70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#chain-icon {
+    width: 60px;
+    height: 60px;
+    display: block;
+}
+
+/* Wallet and Token Input Containers */
+.wallet-input-container,
+.token-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Add spacing between input and trashcan */
+    margin-bottom: 10px;
+}
+
+/* Adjust Input Fields */
+.wallet-input-container input,
+.token-input-container input,
+.token-input-container select {
+    flex: 1; /* Take up remaining space in the row */
+}
+
+/* Scrollable Content */
+.scrollable-content {
+    margin-top: 120px;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Native Coin Container */
+.native-currency-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Native Coin Display */
+.native-coin-display {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between icon, input, and label */
+}
+
+.native-coin-icon {
+    width: 30px;
+    height: 30px;
+}
+
+#native-coin-amount {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 0;
+    width: auto; /* Let it adjust naturally */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+#native-coin-symbol {
+    font-size: 16px;
+    color: #fff;
+    text-shadow: 0 0 5px #ff00ff;
+    font-weight: bold;
+}

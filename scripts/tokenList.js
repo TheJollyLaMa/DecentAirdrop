@@ -1,8 +1,9 @@
+import { detectChain } from "./helpers.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     const tokensContainer = document.getElementById("tokens-container");
     const addTokenButton = document.getElementById("add-token");
 
-    // Token addresses by network
     const tokenAddressesByNetwork = {
         1: [ // Ethereum Mainnet
             { address: "0x1234567890abcdef1234567890abcdef12345678", symbol: "ETH", icon: "./assets/Ethereum.png", decimals: 18 },
@@ -17,74 +18,101 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
     };
 
-    // Function to update the token dropdown
     const updateTokenDropdown = async (dropdown) => {
         if (!dropdown) {
             console.error("Token dropdown not found");
-            return; // Prevent further execution if the dropdown is not available
-        }
-    
-        console.log("Attempting to update token dropdown...");
-    
-
-        const selectedNetwork = await detectChain(); // Detect the current chain
-        console.log("Selected Network (Chain ID):", selectedNetwork);
-        
-        const tokens = tokenAddressesByNetwork[selectedNetwork] || [];
-        console.log("Available Tokens for Selected Network:", tokens);
-        dropdown.innerHTML = "<option value=''>Select a token</option>"; // Clear existing options
-    
-        if (!window.ethereum) {
-            console.error("Ethereum provider not found!");
             return;
         }
     
+        console.log("Updating token dropdown...");
+        const selectedNetwork = await detectChain(); // Detect the current chain
+        console.log("Selected Network (Chain ID):", selectedNetwork);
+    
+        const tokens = tokenAddressesByNetwork[selectedNetwork] || [];
+        console.log("Available Tokens for Selected Network:", tokens);
+    
+        dropdown.innerHTML = "<option value=''>Select a token</option>"; // Clear existing options
+    
+        // Get user's wallet address
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const userAddress = await signer.getAddress();
-        console.log("User's Address:", userAddress); // Log the connected wallet address
     
         for (const token of tokens) {
-            console.log(`Fetching balance for token: ${token.symbol}, Address: ${token.address}`);
-    
-            const tokenContract = new ethers.Contract(token.address, [
-                "function balanceOf(address) view returns (uint256)",
-                "function decimals() view returns (uint8)"
-            ], signer);
+            let balance = "0"; // Default balance
     
             try {
-                const balance = await tokenContract.balanceOf(userAddress);
-                const decimals = await tokenContract.decimals();
-                const formattedBalance = ethers.utils.formatUnits(balance, decimals);
-                console.log(`Token: ${token.symbol}, Balance: ${formattedBalance}`);
+                // ERC-20 token balance fetching
+                const tokenContract = new ethers.Contract(token.address, [
+                    "function balanceOf(address owner) view returns (uint256)",
+                    "function decimals() view returns (uint8)"
+                ], signer);
     
-                const option = document.createElement("option");
-                option.value = token.address;
-                option.textContent = `${token.symbol} - ${formattedBalance}`;
-                dropdown.appendChild(option);
+                const rawBalance = await tokenContract.balanceOf(userAddress);
+                const decimals = await tokenContract.decimals();
+                balance = ethers.utils.formatUnits(rawBalance, decimals);
             } catch (error) {
-                console.error(`Error fetching balance for token ${token.symbol}:`, error);
+                console.warn(`Could not fetch balance for ${token.symbol}`, error);
             }
+    
+            // Add token to dropdown with balance
+            const option = document.createElement("option");
+            option.value = token.address;
+            option.textContent = `${token.symbol} (${balance})`;
+            option.dataset.icon = token.icon; // Attach the icon path
+            dropdown.appendChild(option);
         }
     };
-    // Add Token Fields Dynamically
-    addTokenButton.addEventListener("click", () => {
+
+    const handleTokenSelection = (dropdown) => {
+        dropdown.addEventListener("change", () => {
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
+            const iconPath = selectedOption.dataset.icon || "./assets/Unknown.png";
+
+            const tokenContainer = dropdown.closest(".token-input-container");
+            if (!tokenContainer) {
+                console.error("Token container not found.");
+                return;
+            }
+
+            const tokenIcon = tokenContainer.querySelector(".token-icon"); // Correctly target the token icon
+            if (tokenIcon) {
+                tokenIcon.src = iconPath;
+            } else {
+                console.error("Token icon not found in token container.");
+            }
+            updateTally(); // Update tally when a token is selected
+
+        });
+    };
+
+    const addTokenInput = () => {
         const tokenDiv = document.createElement("div");
         tokenDiv.classList.add("token-input-container");
 
+        // Create Token Icon
+        const tokenIcon = document.createElement("img");
+        tokenIcon.src = "./assets/Eth.gif"; // Default icon
+        tokenIcon.alt = "Token Icon";
+        tokenIcon.classList.add("token-icon");
+        tokenDiv.appendChild(tokenIcon);
+
+        // Create Token Amount Input
+        const amountInput = document.createElement("input");
+        amountInput.type = "number";
+        amountInput.placeholder = "Token Amount";
+        tokenDiv.appendChild(amountInput);
+
         // Create Token Dropdown
         const tokenDropdown = document.createElement("select");
-        tokenDropdown.classList.add("token-dropdown");
+        tokenDropdown.classList.add("tokens-dropdown");
         tokenDiv.appendChild(tokenDropdown);
 
         // Populate the dropdown with tokens for the current network
         updateTokenDropdown(tokenDropdown);
 
-        // Create Token Amount Input
-        const amountInput = document.createElement("input");
-        amountInput.type = "text";
-        amountInput.placeholder = "Token Amount";
-        tokenDiv.appendChild(amountInput);
+        // Attach the event listener to update the icon
+        handleTokenSelection(tokenDropdown);
 
         // Create Delete Button
         const deleteButton = document.createElement("button");
@@ -95,8 +123,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Append to Tokens Container
         tokensContainer.appendChild(tokenDiv);
-    });
 
-    // Expose the updateTokenDropdown function globally
+        updateTally(); // Update tally when a token is selected
+
+    };
+
+    // Attach to preloaded dropdown
+    const initialDropdown = document.querySelector(".tokens-dropdown");
+    if (initialDropdown) {
+        handleTokenSelection(initialDropdown);
+        updateTokenDropdown(initialDropdown);
+    }
+
+    // Add event listener to the "Add Token" button
+    addTokenButton.addEventListener("click", addTokenInput);
+
+    // Expose the updateTokenDropdown function globally for initial population
     window.updateTokenDropdown = updateTokenDropdown;
+
+    document.addEventListener("input", (event) => {
+        if (
+            event.target.closest(".token-input-container") || 
+            event.target.id === "native-coin-amount"
+        ) {
+            updateTally();
+        }
+    });
 });
+
+export const updateTally = async () => {
+    const tallyList = document.getElementById("tally-list");
+    const tallyTotalNative = document.getElementById("tally-total-native");
+    const nativeCoinAmount = parseFloat(document.getElementById("native-coin-amount").value) || 0;
+
+    // Get the current number of wallets
+    const walletCount = document.querySelectorAll(".wallet-input-container input").length || 1;
+
+    // Clear the existing tally list
+    tallyList.innerHTML = "";
+
+    // Get user's native coin balance
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const userAddress = await signer.getAddress();
+    const userBalanceWei = await provider.getBalance(userAddress);
+    const userBalance = parseFloat(ethers.utils.formatEther(userBalanceWei)); // Convert to ETH/MATIC
+
+    // Calculate total native coin amount
+    const totalNativeAmount = (nativeCoinAmount * walletCount).toFixed(4);
+    const nativeColor = totalNativeAmount > userBalance ? "red" : "lime"; // Red if over budget
+
+    tallyTotalNative.innerHTML = `
+        <strong style="color: ${nativeColor};">
+            Total Native Coin: ${totalNativeAmount} ${document.getElementById("native-coin-symbol").textContent}
+        </strong>
+    `;
+
+    // Iterate through token inputs and update the tally
+    const tokenContainers = document.querySelectorAll(".token-input-container");
+
+    for (const container of tokenContainers) {
+        const dropdown = container.querySelector(".tokens-dropdown");
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+        const tokenAmount = parseFloat(container.querySelector("input").value) || 0;
+
+        if (selectedOption && selectedOption.value) {
+            const tokenSymbol = selectedOption.textContent.split(" ")[0]; // Extract token symbol
+            const tokenAddress = selectedOption.value;
+
+            // Get token balance
+            let tokenBalance = 0;
+            try {
+                const tokenContract = new ethers.Contract(tokenAddress, [
+                    "function balanceOf(address owner) view returns (uint256)",
+                    "function decimals() view returns (uint8)"
+                ], signer);
+
+                const rawBalance = await tokenContract.balanceOf(userAddress);
+                const decimals = await tokenContract.decimals();
+                tokenBalance = parseFloat(ethers.utils.formatUnits(rawBalance, decimals));
+            } catch (error) {
+                console.warn(`Could not fetch balance for ${tokenSymbol}`, error);
+            }
+
+            // Multiply amount by wallets and round to 4 decimals
+            const totalTokenAmount = (tokenAmount * walletCount).toFixed(4);
+            const tokenColor = totalTokenAmount > tokenBalance ? "red" : "lime"; // Red if over budget
+
+            // Check if the token is already in the summary
+            let existingItem = Array.from(tallyList.children).find(li => li.dataset.token === tokenSymbol);
+            if (existingItem) {
+                existingItem.innerHTML = `<strong style="color: ${tokenColor};">${tokenSymbol}: ${totalTokenAmount}</strong>`;
+            } else {
+                const listItem = document.createElement("li");
+                listItem.dataset.token = tokenSymbol; // Assign a unique identifier
+                listItem.innerHTML = `<strong style="color: ${tokenColor};">${tokenSymbol}: ${totalTokenAmount}</strong>`;
+                tallyList.appendChild(listItem);
+            }
+        }
+    }
+
+    console.log(`Wallet count: ${walletCount}`);
+    console.log("Tally updated.");
+};

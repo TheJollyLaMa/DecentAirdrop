@@ -211,3 +211,184 @@ button:active {
 button:focus {
     outline: none;
 }
+
+/* Native Coin Container */
+.native-currency-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Native Coin Display */
+.native-coin-display {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between icon, input, and label */
+}
+
+.native-coin-icon {
+    width: 30px;
+    height: 30px;
+}
+
+#native-coin-amount {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 0;
+    width: auto; /* Let it adjust naturally */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+#native-coin-symbol {
+    font-size: 16px;
+    color: #fff;
+    text-shadow: 0 0 5px #ff00ff;
+    font-weight: bold;
+}
+
+.token-icon,
+.dropdown-icon {
+    width: 24px; /* Adjust to your desired size */
+    height: 24px;
+    border-radius: 50%; /* Optional: Makes it circular */
+    border: 2px solid #00fdc2;
+    box-shadow: 0 0 5px rgba(114, 238, 224, 0.74), 0 0 15px rgba(255, 242, 2, 0.74);
+}
+
+
+/* Tally Section Styling */
+.tally-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    text-align: center;
+    color: #fff;
+}
+
+.tally-section h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+#tally-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#tally-list li {
+    margin: 5px 0;
+    font-size: 14px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+#tally-total-native {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #ff00ff;
+}
+
+/* Contract Address Display */
+#contract-address-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 50px;
+    padding: 10px;
+    color: #00ffff;
+    text-shadow: 0 0 10px #ff00ff;
+}
+
+#contract-address-display .icons {
+    display: flex;
+    gap: 5px;
+}
+
+#contract-address-display img.icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #00fdc2;
+    box-shadow: 0 0 5px rgba(114, 238, 224, 0.74), 0 0 15px rgba(255, 242, 2, 0.74);
+}
+
+#contract-address-display #contract-address-start,
+#contract-address-display #contract-address-end {
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #ff00ff;
+}
+
+/* Link Styling */
+#contract-address-display a {
+    color: #00ffff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+    border: 1px solid #00ffff;
+    padding: 10px;
+    border-radius: 5px;
+    text-shadow: 0 0 5px #008cff;
+    box-shadow: 0 0 5px rgb(228, 250, 85);
+}
+
+#contract-address-display a:hover {
+    color: #eeff00;
+}
+
+#airdrop-events-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 15px;
+    box-shadow: 0 0 10px cyan;
+    text-align: center;
+    color: #fff;
+}
+
+.event-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #ffff00;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+}
+
+.event-content {
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.event-content a {
+    color: cyan;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.event-content a:hover {
+    color: #ff0;
+}
+
+.timeline-connector {
+    text-align: center;
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+.timeline-icon {
+    width: 30px;
+    height: 30px;
+}

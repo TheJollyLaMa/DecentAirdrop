@@ -43,19 +43,22 @@
 
         <form id="airdrop-form">
             <h1>MetaMask Airdrop</h1>
-            <!-- New Section for Native Coin Amount -->
-            <div id="native-currency-section">
-                <label for="native-coin-amount">Amount of native coin to send</label>
-                <input type="number" id="native-coin-amount" placeholder="Enter native coin amount" />
-                <div id="native-coin-symbol"></div> <!-- Display current network's native coin -->
+            <!-- Section for Native Coin Amount -->
+            <div id="native-currency-section" class="native-currency-container">
+                <div class="native-coin-display">
+                    <img src="./assets/Eth.gif" alt="Native Coin Icon" class="native-coin-icon" />
+                    <input type="number" id="native-coin-amount" placeholder="Enter amount" />
+                    <span id="native-coin-symbol">ETH</span>
+                </div>
             </div>
-            
+
             <br><hr><br>
             <!-- Token Dropdown and Amount Input -->
             <div id="tokens-container">
                 <div class="token-input-container">
-                    <select id="tokens-dropdown" class="tokens-dropdown"></select>
+                    <img src="./assets/Eth.gif" alt="Token Icon" class="token-icon dropdown-icon" />
                     <input type="text" placeholder="Token Amount" />
+                    <select id="tokens-dropdown" class="tokens-dropdown"></select>
                     <button class="delete-button">🗑️</button>
                 </div>
             </div>
@@ -71,14 +74,37 @@
                 </div>
             </div>
             <button type="button" id="add-wallet">Add Wallet</button>
+
             <br><hr><br>
             
+            <!-- Tally Section -->
+            <div id="tally-section" class="tally-section">
+                <h3>Airdrop Summary</h3>
+                <ul id="tally-list">
+                    <!-- This will dynamically list tokens and amounts -->
+                </ul>
+                <p id="tally-total-native"></p> <!-- Total native coins -->
+            </div>
+
+            <!-- Send Airdrop Button -->
             <button type="button" id="send-airdrop">Send Airdrop</button>
+            <!-- Contract Address Display -->
+            <div id="contract-address-display"><!-- This will be dynamically populated --></div>
+        
         </form>
 
         <p id="status"></p>
     
     </div>
+
+    <!-- Airdrop Events -->
+    <br><hr><br>
+
+    <section id="airdrop-events-section">
+        <h2>📜 Airdrop Event Timeline</h2>
+        <div id="airdrop-events"></div>
+    </section>
+
   </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
@@ -86,5 +112,7 @@
     <script type="module" src="scripts/tokenList.js"></script>
     <script type="module" src="scripts/walletList.js"></script>
     <script type="module" src="scripts/nativeCurrency.js"></script>
-</body>
+    <script type="module" src="scripts/sendAirdrop.js"></script>
+    <script type="module" src="scripts/airdropEvents.js"></script>
+  </body>
 </html>

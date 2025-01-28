@@ -1,0 +1,60 @@
+/* Button Styles */
+button {
+    background-color: #00ffff;
+    color: #000;
+    font-family: "Chalkduster", cursive;
+    font-size: 16px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    border: none;
+    margin: 10px;
+    cursor: pointer;
+    text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+button:hover {
+    background-color: #ff00ff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 1);
+}
+
+button:active {
+    background-color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+}
+
+/* Add Token and Wallet Buttons */
+#add-token, #add-wallet {
+    background-color: #fffb005c;
+    color: #fff;
+    text-shadow: 0 0 5px #a7fefe, 0 0 10px #00ffff;
+    box-shadow: 0 0 5px #a7fefe, 0 0 10px #00ffff;
+}
+
+#add-token:hover, #add-wallet:hover {
+    background-color: #00ffffab;
+    color: #fffb005c;
+    text-shadow: 0 0 5px #a7fefe, 0 0 10px #eaff00;
+    box-shadow: 0 0 5px #a7fefe, 0 0 10px #eaff00;
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Trashcan (Delete Button) */
+.wallet-input-container .delete-button,
+.token-input-container .delete-button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.wallet-input-container .delete-button:hover,
+.token-input-container .delete-button:hover {
+    color: #ff0000; /* Change to red on hover */
+}

@@ -1,36 +1,39 @@
-// nativeCurrency.js
+import { detectChain } from "./helpers.js";
+
 document.addEventListener("DOMContentLoaded", async () => {
     const nativeCoinAmountInput = document.getElementById("native-coin-amount");
     const nativeCoinSymbol = document.getElementById("native-coin-symbol");
 
-    // Function to detect the current chain and set the native coin symbol
-    const detectChain = async () => {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const network = await provider.getNetwork();
-        const chainId = network.chainId;
+    // Function to set the native coin symbol and icon
+    const updateNativeCurrency = async () => {
+        const chainId = await detectChain();
 
-        let nativeCoin;
+        let nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" }; // Default to ETH
         switch (chainId) {
             case 1:  // Ethereum Mainnet
-                nativeCoin = "ETH";
+                nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" };
                 break;
             case 137: // Polygon
-                nativeCoin = "MATIC";
+                nativeCoin = { name: "POL", icon: "./assets/Polygon.png" };
                 break;
             case 10:  // Optimism
-                nativeCoin = "ETH";
+                nativeCoin = { name: "ETH", icon: "./assets/Eth_on_Optimism.png" };
                 break;
             default:
-                nativeCoin = "ETH"; // Default to ETH if unknown
+                console.log("Unsupported chain ID:", chainId);
+                nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" }; // Fallback for unknown chains
         }
 
-        nativeCoinSymbol.textContent = nativeCoin;
-        return nativeCoin;  // Return the native coin for further use
+        // Update the icon and label in the UI
+        nativeCoinSymbol.innerHTML = `
+            <img src="${nativeCoin.icon}" alt="${nativeCoin.name}" class="native-coin-icon" />
+            ${nativeCoin.name}
+        `;
     };
 
-    // Detect the network and set the native coin symbol when the page loads
-    await detectChain();
+    // Update the native currency display on page load
+    await updateNativeCurrency();
 
-    // Make the function accessible globally
-    window.detectChain = detectChain;
+    // Expose the function globally if needed elsewhere
+    window.updateNativeCurrency = updateNativeCurrency;
 });
