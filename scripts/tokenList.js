@@ -15,6 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
         137: [ // Polygon
             { address: "0x81cCeF6414D4CDbed9FD6Ea98c2D00105800cd78", symbol: "SHT", icon: "./assets/SHT.png", decimals: 18 },
             { address: "0x4F604735c1cF31399C6E711D5962b2B3E0225AD3", symbol: "USDGLO", icon: "./assets/USDGLO.png", decimals: 18 },
+            { address: "0xECd78F43750CB373DA5A9788FD583F10EcB5c00C", symbol: "BOBCAT", icon: "./assets/BobCat.png", decimals: 18 },
+            { address: "0xC95e30880d4b2756684Ef2362204fbAc4806095B", symbol: "W8W", icon: "./assets/WithinTheVacuum.png", decimals: 18 },
+            { address: "0x3932EDe1518Db273ef593d84D011C0D8c169143D", symbol: "EBT", icon: "./assets/Eclipse.png", decimals: 18 },
+            { address: "0x1a74f818F1b42dBFcE449c7Fa93B107C6e4A2433", symbol: "OMMM", icon: "./assets/Ommm.png", decimals: 18 },
         ],
     };
 

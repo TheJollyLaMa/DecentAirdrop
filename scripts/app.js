@@ -1,4 +1,6 @@
 import { detectChain } from "./helpers.js";
+import { displayAirdropTimeline } from "./airdropEvents.js";
+import { displayContractAddress } from "./sendAirdrop.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const connectWalletButton = document.getElementById("connect-wallet");
@@ -17,7 +19,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     
             // Update the chain icon
             await updateChainIcon();
-    
+
+            await displayContractAddress();
+
             // Update the native currency display
             if (typeof window.updateNativeCurrency === "function") {
                 await window.updateNativeCurrency();
@@ -56,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 10: "./assets/Optimism.png", // Optimism
             };
     
-            const iconSrc = chainIcons[chainId] || "./assets/Unknown.png";
+            const iconSrc = chainIcons[chainId] || "./assets/Eth.gif";
             const chainIcon = document.getElementById("chain-icon");
             chainIcon.src = iconSrc; // Update the chain icon
             console.log("Chain Icon Updated to:", iconSrc);
@@ -65,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    const switchToNetwork = async (chainId) => {
+    async function switchToNetwork(chainId) {
         const networkParams = {
             1: {
                 chainId: "0x1",
@@ -99,6 +103,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 params: [{ chainId: network.chainId }],
             });
             console.log(`Switched to ${network.chainName}`);
+    
+            // 🔹 **Update Contract Address in UI when Chain Switches**
+            displayContractAddress();
         } catch (error) {
             console.error(`Error switching to ${network.chainName}:`, error);
             if (error.code === 4902) {
@@ -109,12 +116,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                         params: [network],
                     });
                     console.log(`Added and switched to ${network.chainName}`);
+    
+                    // 🔹 **Update UI after adding network**
+                    displayContractAddress();
                 } catch (addError) {
                     console.error(`Failed to add network ${network.chainName}:`, addError);
                 }
             }
         }
-    };
+    }
     
     const connectWallet = async () => {
         const walletButton = document.getElementById("connect-wallet");
@@ -134,9 +144,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             await switchToNetwork(targetChainId);
 
             // Update UI
+            
             updateWalletDisplay();
             await updateChainIcon(); // Ensure the chain icon updates here
 
+            // await displayAirdropTimeline(); // Display the airdrop timeline
             // Set button state to "connected"
             walletButton.classList.add("connected");
             walletButton.classList.remove("disconnected");

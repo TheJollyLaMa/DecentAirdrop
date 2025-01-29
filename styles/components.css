@@ -300,49 +300,62 @@ button:focus {
 }
 
 /* Contract Address Display */
+/* Contract Address Display */
 #contract-address-display {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    margin-top: 50px;
+    gap: 8px;
+    margin-top: 20px;
     padding: 10px;
     color: #00ffff;
     text-shadow: 0 0 10px #ff00ff;
+    flex-wrap: nowrap; /* Ensure it stays in one line */
 }
 
+/* Icons inside Contract Display */
 #contract-address-display .icons {
     display: flex;
-    gap: 5px;
+    align-items: center;
+    gap: 4px;
 }
 
+/* Individual Icon Styling */
 #contract-address-display img.icon {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: 2px solid #00fdc2;
     box-shadow: 0 0 5px rgba(114, 238, 224, 0.74), 0 0 15px rgba(255, 242, 2, 0.74);
 }
 
+/* Contract Address Start/End */
 #contract-address-display #contract-address-start,
 #contract-address-display #contract-address-end {
     font-weight: bold;
     color: #ffffff;
     text-shadow: 0 0 10px #ff00ff;
+    display: inline-block;
 }
 
-/* Link Styling */
+/* Contract Link Styling */
 #contract-address-display a {
     color: #00ffff;
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease-in-out;
     border: 1px solid #00ffff;
-    padding: 10px;
+    padding: 5px 8px;
     border-radius: 5px;
     text-shadow: 0 0 5px #008cff;
     box-shadow: 0 0 5px rgb(228, 250, 85);
+    display: inline-block;
 }
+
+#contract-address-display a span {
+    display: inline-block;
+}
+
 
 #contract-address-display a:hover {
     color: #eeff00;
