@@ -7,7 +7,8 @@ const statusElement = document.getElementById("status");
 const CONTRACT_ADDRESSES = {
     1: "0x??????????????????????????????????????ETH", // Ethereum Mainnet
     10: "0x48Fa7CC60950783820c22392c6F9127cd4eA30f9", // Optimism
-    137: "0x64717B442c6ff1F2f71da09e11ABa7946EE4C5FD"  // Polygon
+    137: "0x64717B442c6ff1F2f71da09e11ABa7946EE4C5FD",  // Polygon
+    24734: "0x5436865bF0aC7470d16C14f6B6E6e0F59333A5c9" //MintMe
 };
 
 // Block Explorers for Different Networks
@@ -15,6 +16,7 @@ const BLOCK_EXPLORERS = {
     1: "https://etherscan.io/",
     10: "https://optimistic.etherscan.io/",
     137: "https://polygonscan.com/",
+    24734: "https://www.mintme.com/explorer/"
 };
 
 // ✅ **Fix: Ensure getCurrentContractAddress() properly awaits detectChain()**
@@ -44,9 +46,10 @@ async function displayContractAddress() {
         1: "./assets/Ethereum.png",
         10: "./assets/Optimism.png",
         137: "./assets/Polygon.png",
+        24734: "./assets/MintMe.png"
     };
 
-    const chainIcon = chainIcons[chainId] || "./assets/Unknown.png"; // Fallback icon
+    const chainIcon = chainIcons[chainId] || "./assets/Eth.gif"; // Fallback icon
 
     contractAddressDisplay.innerHTML = `
         <div id="contract-address-display">
@@ -93,7 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Load ABI
-            const airdropABI = await fetch("../data/Airdrop.json").then((res) => res.json());
+            const repoName = "DecentAirdrop";  // Your GitHub repo name
+            const basePath = window.location.origin.includes("github.io") 
+                ? `/${repoName}/data/Airdrop.json`
+                : "../data/Airdrop.json";
+            
+            const airdropABI = await fetch(basePath).then((res) => res.json());
+            
             const airdropContract = new ethers.Contract(contractAddress, airdropABI, signer);
 
             console.log("Connected to contract:", contractAddress);
@@ -176,9 +185,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 { value: totalNativeAmount.toString() }
             );
 
-            const explorerUrl = BLOCK_EXPLORERS[network.chainId] || "#";
-            statusElement.innerHTML = `<p style="color: cyan;">Transaction Sent! Hash: 
-                <a href="${explorerUrl + tx.hash}" target="_blank">${tx.hash}</a></p>`;
+
+            const explorerUrl = BLOCK_EXPLORERS[network.chainId] + "tx/" || "#";
+            const txHash = tx.hash;
+            const shortHashStart = txHash.slice(0, 6);
+            const shortHashEnd = txHash.slice(-4);
+            
+            // **Dynamic Icons for Transaction Display**
+            const txIcons = `
+                <img src="./assets/Eth.gif" alt="Icon" class="tx_icon">
+                <img src="${currentChainIcon}" alt="Icon" class="tx_icon">
+                <img src="./assets/SecretPyramid.png" alt="Icon" class="tx_icon">
+                <img src="${currentChainIcon}" alt="Icon" class="tx_icon">
+                <img src="./assets/Eth.gif" alt="Icon" class="tx_icon">
+            `;
+            
+            statusElement.innerHTML = `<p style="color: cyan;">
+                Transaction Sent! Hash: 
+                <a href="${explorerUrl + txHash}" target="_blank">
+                    <span id="tx-hash-start">${shortHashStart}</span>
+                    <span class="icons">${txIcons}</span>
+                    <span id="tx-hash-end">${shortHashEnd}</span>
+                </a>
+            </p>`;
 
             const receipt = await tx.wait();
             console.log("Transaction confirmed!", receipt);

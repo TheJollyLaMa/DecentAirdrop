@@ -19,6 +19,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 10:  // Optimism
                 nativeCoin = { name: "ETH", icon: "./assets/Eth_on_Optimism.png" };
                 break;
+            case 24734: // MintMe
+                nativeCoin = { name: "MINTME", icon: "./assets/MintMe.png" };
+                break;
             default:
                 console.log("Unsupported chain ID:", chainId);
                 nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" }; // Fallback for unknown chains

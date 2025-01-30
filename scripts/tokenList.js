@@ -20,6 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
             { address: "0x3932EDe1518Db273ef593d84D011C0D8c169143D", symbol: "EBT", icon: "./assets/Eclipse.png", decimals: 18 },
             { address: "0x1a74f818F1b42dBFcE449c7Fa93B107C6e4A2433", symbol: "OMMM", icon: "./assets/Ommm.png", decimals: 18 },
         ],
+        24734: [ //MintMe}
+            { address: "0x1234567890abcdef1234567890abcdef12345678", symbol: "DSH", icon: "./assets/SHT.png", decimals: 18 },
+        ]
     };
 
     const updateTokenDropdown = async (dropdown) => {
@@ -71,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const handleTokenSelection = (dropdown) => {
         dropdown.addEventListener("change", () => {
             const selectedOption = dropdown.options[dropdown.selectedIndex];
-            const iconPath = selectedOption.dataset.icon || "./assets/Unknown.png";
+            const iconPath = selectedOption.dataset.icon || "./assets/Eth.gif";
 
             const tokenContainer = dropdown.closest(".token-input-container");
             if (!tokenContainer) {
@@ -132,11 +135,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     };
 
-    // Attach to preloaded dropdown
-    const initialDropdown = document.querySelector(".tokens-dropdown");
-    if (initialDropdown) {
-        handleTokenSelection(initialDropdown);
-        updateTokenDropdown(initialDropdown);
+    const tokensDropdown = document.getElementById("tokens-dropdown");
+    if (!tokensDropdown) {
+        console.error("⚠️ Token dropdown not found! Ensure the element exists in the DOM.");
+    } else {
+        console.log("✅ Token dropdown detected and loaded.");
+        window.updateTokenDropdown(tokensDropdown);
     }
 
     // Add event listener to the "Add Token" button

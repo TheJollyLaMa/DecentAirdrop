@@ -22,3 +22,21 @@ export const loadAbi = async (filePath) => {
         throw new Error("Could not load ABI");
     }
 };
+
+
+export const formatTransactionHash = (txHash, chainId) => {
+    const firstPart = txHash.slice(0, 6);
+    const lastPart = txHash.slice(-4);
+    
+    return `
+        <span>${firstPart}</span>
+        <span class="icons">
+            <img src="./assets/Eth.gif" class="icon">
+            <img src="./assets/SecretPyramid.png" class="icon">
+            <img src="./assets/Eth.gif" class="icon">
+            <img src="./assets/SecretPyramid.png" class="icon">
+            <img src="./assets/Eth.gif" class="icon">
+        </span>
+        <span>${lastPart}</span>
+    `;
+};
