@@ -2,6 +2,7 @@ import { detectChain } from "./helpers.js";
 import { displayAirdropTimeline } from "./airdropEvents.js";
 import { displayContractAddress } from "./sendAirdrop.js";
 
+
 document.addEventListener("DOMContentLoaded", async () => {
     const connectWalletButton = document.getElementById("connect-wallet");
     const walletAddressStart = document.getElementById("wallet-address-start");
@@ -11,26 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let connected = false;
     let walletAddress;
 
-    /** 🔹 Detect the current chain before wallet is connected */
-    if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        try {
-            const network = await provider.getNetwork();
-            const chainId = network.chainId;
-            console.log("Detected Chain ID:", chainId);
-
-            await updateChainIcon(chainId);
-            await displayContractAddress(chainId);
-        } catch (error) {
-            console.error("Error detecting initial chain:", error);
-        }
-
-        /** 🔹 Handle chain changes */
-        window.ethereum.on("chainChanged", async () => {
-            console.log("Chain changed!");
-            await handleChainSwitch();
-        });
-    }
 
     /** 🔹 Function to handle chain switching */
     async function handleChainSwitch() {
@@ -126,4 +107,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     connectWalletButton.addEventListener("click", connectWallet);
+
+    /** 🔹 Detect the current chain before wallet is connected */
+    if (window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        try {
+            const network = await provider.getNetwork();
+            const chainId = network.chainId;
+            console.log("Detected Chain ID:", chainId);
+
+            await updateChainIcon(chainId);
+            await displayContractAddress(chainId);
+        } catch (error) {
+            console.error("Error detecting initial chain:", error);
+        }
+
+        /** 🔹 Handle chain changes */
+        window.ethereum.on("chainChanged", async () => {
+            console.log("Chain changed!");
+            await handleChainSwitch();
+        });
+    }
+
 });

@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("⚠️ Token dropdown not found! Ensure the element exists in the DOM.");
     } else {
         console.log("✅ Token dropdown detected and loaded.");
-        window.updateTokenDropdown(tokensDropdown);
+        updateTokenDropdown(tokensDropdown);
     }
 
     // Add event listener to the "Add Token" button
