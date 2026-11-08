@@ -1,7 +1,7 @@
 // helpers.js
 export const detectChain = async () => {
     try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const provider = new ethers.providers.Web3Provider(window.DecentHead?.getWallet().rawProvider || window.ethereum, 'any');
         const network = await provider.getNetwork();
         console.log("Network detected:", network);
         return network.chainId; // Return the chain ID

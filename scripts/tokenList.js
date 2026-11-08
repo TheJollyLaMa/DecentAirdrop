@@ -1,13 +1,11 @@
 import { detectChain } from "./helpers.js";
+import { amountToUnits } from "./airdrop-plan.mjs";
 
 document.addEventListener("DOMContentLoaded", () => {
     const tokensContainer = document.getElementById("tokens-container");
     const addTokenButton = document.getElementById("add-token");
 
     const tokenAddressesByNetwork = {
-        1: [ // Ethereum Mainnet
-            { address: "0x1234567890abcdef1234567890abcdef12345678", symbol: "ETH", icon: "./assets/Ethereum.png", decimals: 18 },
-        ],
         10: [ // Optimism
             { address: "0xDb83f6d02a9fA73fc1B47A0Cfff33D2dC66aD619", symbol: "SHT", icon: "./assets/SHT.png", decimals: 18 },
             { address: "0x4F604735c1cF31399C6E711D5962b2B3E0225AD3", symbol: "USDGLO", icon: "./assets/USDGLO.png", decimals: 18 },
@@ -20,19 +18,29 @@ document.addEventListener("DOMContentLoaded", () => {
             { address: "0x3932EDe1518Db273ef593d84D011C0D8c169143D", symbol: "EBT", icon: "./assets/Eclipse.png", decimals: 18 },
             { address: "0x1a74f818F1b42dBFcE449c7Fa93B107C6e4A2433", symbol: "OMMM", icon: "./assets/Ommm.png", decimals: 18 },
         ],
-        24734: [ //MintMe}
-            { address: "0x1234567890abcdef1234567890abcdef12345678", symbol: "DSH", icon: "./assets/SHT.png", decimals: 18 },
+        8453: [
+            { address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", symbol: "USDC", icon: "./assets/Eth.gif", decimals: 6 },
         ]
     };
 
     const updateTokenDropdown = async (dropdown) => {
+        if (!window.DecentHead?.getWallet().snapshot().connected) {
+            document.getElementById("status").textContent = "Connect an EVM wallet to load token balances.";
+            return;
+        }
         if (!dropdown) {
-            console.error("Token dropdown not found");
+            await Promise.all(Array.from(tokensContainer.querySelectorAll("select")).map(item => updateTokenDropdown(item)));
             return;
         }
     
         console.log("Updating token dropdown...");
+        const session = window.DecentHead.getWallet();
+        const state = session.snapshot();
+        const raw = session.rawProvider;
+        const current = () => session.rawProvider === raw && session.snapshot().connected &&
+            session.snapshot().address === state.address && session.snapshot().chainId === state.chainId;
         const selectedNetwork = await detectChain(); // Detect the current chain
+        if (!current()) return;
         console.log("Selected Network (Chain ID):", selectedNetwork);
     
         const tokens = tokenAddressesByNetwork[selectedNetwork] || [];
@@ -41,32 +49,39 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.innerHTML = "<option value=''>Select a token</option>"; // Clear existing options
     
         // Get user's wallet address
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const userAddress = await signer.getAddress();
+        const provider = new ethers.providers.Web3Provider(window.DecentHead?.getWallet().rawProvider || window.ethereum, 'any');
+        const [userAddress] = await provider.listAccounts();
+        if (!current()) return;
     
         for (const token of tokens) {
-            let balance = "0"; // Default balance
+            let balance = "balance unavailable";
+            let decimals;
     
             try {
                 // ERC-20 token balance fetching
                 const tokenContract = new ethers.Contract(token.address, [
                     "function balanceOf(address owner) view returns (uint256)",
                     "function decimals() view returns (uint8)"
-                ], signer);
+                ], provider);
     
-                const rawBalance = await tokenContract.balanceOf(userAddress);
-                const decimals = await tokenContract.decimals();
-                balance = ethers.utils.formatUnits(rawBalance, decimals);
+                decimals = await tokenContract.decimals();
+                if (userAddress) {
+                    const rawBalance = await tokenContract.balanceOf(userAddress);
+                    balance = ethers.utils.formatUnits(rawBalance, decimals);
+                } else {
+                    balance = "connect wallet for balance";
+                }
             } catch (error) {
                 console.warn(`Could not fetch balance for ${token.symbol}`, error);
             }
+            if (!current()) return;
     
             // Add token to dropdown with balance
             const option = document.createElement("option");
             option.value = token.address;
             option.textContent = `${token.symbol} (${balance})`;
             option.dataset.icon = token.icon; // Attach the icon path
+            if (decimals !== undefined) option.dataset.decimals = String(decimals);
             dropdown.appendChild(option);
         }
     };
@@ -106,7 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Create Token Amount Input
         const amountInput = document.createElement("input");
-        amountInput.type = "number";
+        amountInput.type = "text";
+        amountInput.inputMode = "decimal";
         amountInput.placeholder = "Token Amount";
         tokenDiv.appendChild(amountInput);
 
@@ -116,7 +132,9 @@ document.addEventListener("DOMContentLoaded", () => {
         tokenDiv.appendChild(tokenDropdown);
 
         // Populate the dropdown with tokens for the current network
-        updateTokenDropdown(tokenDropdown);
+        updateTokenDropdown(tokenDropdown).catch(error => {
+            document.getElementById("status").textContent = `Could not load tokens: ${error.message}`;
+        });
 
         // Attach the event listener to update the icon
         handleTokenSelection(tokenDropdown);
@@ -125,7 +143,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "🗑️";
         deleteButton.classList.add("delete-button");
-        deleteButton.addEventListener("click", () => tokenDiv.remove());
+        deleteButton.type = "button";
+        deleteButton.addEventListener("click", () => { tokenDiv.remove(); updateTally(); });
         tokenDiv.appendChild(deleteButton);
 
         // Append to Tokens Container
@@ -140,11 +159,16 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("⚠️ Token dropdown not found! Ensure the element exists in the DOM.");
     } else {
         console.log("✅ Token dropdown detected and loaded.");
-        updateTokenDropdown(tokensDropdown);
+        handleTokenSelection(tokensDropdown);
+        tokensDropdown.innerHTML = "<option value=''>Connect wallet to load tokens</option>";
     }
 
     // Add event listener to the "Add Token" button
     addTokenButton.addEventListener("click", addTokenInput);
+    tokensContainer.querySelector(".delete-button")?.addEventListener("click", event => {
+        event.currentTarget.closest(".token-input-container").remove();
+        updateTally();
+    });
 
     // Expose the updateTokenDropdown function globally for initial population
     window.updateTokenDropdown = updateTokenDropdown;
@@ -152,7 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("input", (event) => {
         if (
             event.target.closest(".token-input-container") || 
-            event.target.id === "native-coin-amount"
+            event.target.id === "native-coin-amount" ||
+            event.target.closest(".wallet-input-container")
         ) {
             updateTally();
         }
@@ -162,75 +187,24 @@ document.addEventListener("DOMContentLoaded", () => {
 export const updateTally = async () => {
     const tallyList = document.getElementById("tally-list");
     const tallyTotalNative = document.getElementById("tally-total-native");
-    const nativeCoinAmount = parseFloat(document.getElementById("native-coin-amount").value) || 0;
-
-    // Get the current number of wallets
-    const walletCount = document.querySelectorAll(".wallet-input-container input").length || 1;
-
-    // Clear the existing tally list
-    tallyList.innerHTML = "";
-
-    // Get user's native coin balance
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const userAddress = await signer.getAddress();
-    const userBalanceWei = await provider.getBalance(userAddress);
-    const userBalance = parseFloat(ethers.utils.formatEther(userBalanceWei)); // Convert to ETH/MATIC
-
-    // Calculate total native coin amount
-    const totalNativeAmount = (nativeCoinAmount * walletCount).toFixed(4);
-    const nativeColor = totalNativeAmount > userBalance ? "red" : "lime"; // Red if over budget
-
-    tallyTotalNative.innerHTML = `
-        <strong style="color: ${nativeColor};">
-            Total Native Coin: ${totalNativeAmount} ${document.getElementById("native-coin-symbol").textContent}
-        </strong>
-    `;
-
-    // Iterate through token inputs and update the tally
-    const tokenContainers = document.querySelectorAll(".token-input-container");
-
-    for (const container of tokenContainers) {
-        const dropdown = container.querySelector(".tokens-dropdown");
-        const selectedOption = dropdown.options[dropdown.selectedIndex];
-        const tokenAmount = parseFloat(container.querySelector("input").value) || 0;
-
-        if (selectedOption && selectedOption.value) {
-            const tokenSymbol = selectedOption.textContent.split(" ")[0]; // Extract token symbol
-            const tokenAddress = selectedOption.value;
-
-            // Get token balance
-            let tokenBalance = 0;
-            try {
-                const tokenContract = new ethers.Contract(tokenAddress, [
-                    "function balanceOf(address owner) view returns (uint256)",
-                    "function decimals() view returns (uint8)"
-                ], signer);
-
-                const rawBalance = await tokenContract.balanceOf(userAddress);
-                const decimals = await tokenContract.decimals();
-                tokenBalance = parseFloat(ethers.utils.formatUnits(rawBalance, decimals));
-            } catch (error) {
-                console.warn(`Could not fetch balance for ${tokenSymbol}`, error);
-            }
-
-            // Multiply amount by wallets and round to 4 decimals
-            const totalTokenAmount = (tokenAmount * walletCount).toFixed(4);
-            const tokenColor = totalTokenAmount > tokenBalance ? "red" : "lime"; // Red if over budget
-
-            // Check if the token is already in the summary
-            let existingItem = Array.from(tallyList.children).find(li => li.dataset.token === tokenSymbol);
-            if (existingItem) {
-                existingItem.innerHTML = `<strong style="color: ${tokenColor};">${tokenSymbol}: ${totalTokenAmount}</strong>`;
-            } else {
-                const listItem = document.createElement("li");
-                listItem.dataset.token = tokenSymbol; // Assign a unique identifier
-                listItem.innerHTML = `<strong style="color: ${tokenColor};">${tokenSymbol}: ${totalTokenAmount}</strong>`;
-                tallyList.appendChild(listItem);
-            }
+    const walletCount = BigInt(Array.from(document.querySelectorAll(".wallet-input-container input")).filter(input => input.value.trim()).length);
+    tallyList.replaceChildren();
+    try {
+        const native = amountToUnits(document.getElementById("native-coin-amount").value.trim() || "0", 18) * walletCount;
+        tallyTotalNative.textContent = `Native total: ${ethers.utils.formatEther(native.toString())} for ${walletCount} entered recipients (gas additional). Use Prepare for full validation.`;
+        for (const container of document.querySelectorAll(".token-input-container")) {
+            const option = container.querySelector("select").selectedOptions[0];
+            const amount = container.querySelector("input").value.trim();
+            if (!amount && !option?.value) continue;
+            if (!option?.value || option.dataset.decimals === undefined) throw new Error("Token decimals unavailable; select a token and retry.");
+            const decimals = Number(option.dataset.decimals);
+            const total = amountToUnits(amount || "0", decimals) * walletCount;
+            const item = document.createElement("li");
+            item.textContent = `${option.value}: ${ethers.utils.formatUnits(total.toString(), decimals)} (balance checked before sending)`;
+            tallyList.append(item);
         }
+    } catch (error) {
+        tallyList.replaceChildren();
+        tallyTotalNative.textContent = `Summary unavailable: ${error.message}`;
     }
-
-    console.log(`Wallet count: ${walletCount}`);
-    console.log("Tally updated.");
 };

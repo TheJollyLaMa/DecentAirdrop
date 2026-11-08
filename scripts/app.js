@@ -1,132 +1,54 @@
-import { detectChain } from "./helpers.js";
-import { displayAirdropTimeline } from "./airdropEvents.js";
-import { displayContractAddress } from "./sendAirdrop.js";
+import { DecentHead } from '../decent-head.js';
+import { displayAirdropTimeline } from './airdropEvents.js';
+import { displayContractAddress } from './sendAirdrop.js';
 
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const connectWalletButton = document.getElementById("connect-wallet");
-    const walletAddressStart = document.getElementById("wallet-address-start");
-    const walletAddressEnd = document.getElementById("wallet-address-end");
-    const chainIcon = document.getElementById("chain-icon");
-
-    let connected = false;
-    let walletAddress;
-
-
-    /** 🔹 Function to handle chain switching */
-    async function handleChainSwitch() {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        try {
-            const network = await provider.getNetwork();
-            const chainId = network.chainId;
-            console.log("Switched to Chain ID:", chainId);
-
-            await updateChainIcon(chainId);
-            await displayContractAddress(chainId);
-
-            // Update native currency and token dropdown
-            if (typeof window.updateNativeCurrency === "function") {
-                await window.updateNativeCurrency();
-            } else {
-                console.error("updateNativeCurrency function is not defined");
+document.addEventListener('DOMContentLoaded', () => {
+    const session = DecentHead.getWallet();
+    const button = document.getElementById('connect-wallet');
+    let generation = 0;
+    const update = async state => {
+        const request = ++generation;
+        document.getElementById('wallet-address-start').textContent = state.address?.slice(0, 6) || '';
+        document.getElementById('wallet-address-end').textContent = state.address?.slice(-4) || '';
+        button.classList.toggle('connected', state.connected);
+        button.classList.toggle('disconnected', !state.connected);
+        if (!state.connected) {
+            document.getElementById('airdrop-events').replaceChildren();
+            document.getElementById('chain-icon').hidden = true;
+            document.getElementById('contract-address-display').textContent = 'Disconnected. Connect explicitly to inspect a deployment.';
+            for (const select of document.querySelectorAll('.token-input-container select')) {
+                select.innerHTML = "<option value=''>Connect wallet to load tokens</option>";
             }
-
-            if (typeof window.updateTokenDropdown === "function") {
-                await window.updateTokenDropdown();
-            }
-        } catch (error) {
-            console.error("Error handling chain switch:", error);
-        }
-    }
-
-    /** 🔹 Function to update wallet display */
-    const updateWalletDisplay = () => {
-        if (connected && walletAddress) {
-            walletAddressStart.textContent = walletAddress.slice(0, 6);
-            walletAddressEnd.textContent = walletAddress.slice(-4);
-        }
-    };
-
-    /** 🔹 Function to update the chain icon */
-    const updateChainIcon = async (chainId) => {
-        const chainIcons = {
-            1: "./assets/Ethereum.png",
-            10: "./assets/Optimism.png",
-            137: "./assets/Polygon.png",
-            24734: "./assets/MintMe.png"
-        };
-
-        const iconSrc = chainIcons[chainId] || "./assets/Eth.gif";
-        chainIcon.src = iconSrc;
-        console.log("Chain Icon Updated to:", iconSrc);
-    };
-
-    /** 🔹 Function to connect wallet */
-    const connectWallet = async () => {
-        const walletButton = document.getElementById("connect-wallet");
-
-        if (!window.ethereum) {
-            alert("MetaMask is not installed!");
+            document.getElementById('tally-list').replaceChildren();
+            document.getElementById('tally-total-native').textContent = '';
+            document.getElementById('status').textContent = 'Disconnected. Connect and review recipients before sending.';
             return;
         }
-
+        const chainId = Number(BigInt(state.chainId));
+        const icon = document.getElementById('chain-icon');
+        const icons = { 1: 'Ethereum.png', 10: 'Optimism.png', 137: 'Polygon.png', 24734: 'MintMe.png' };
+        icon.hidden = !icons[chainId];
+        if (icons[chainId]) icon.src = `./assets/${icons[chainId]}`;
         try {
-            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-            walletAddress = accounts[0];
-            connected = true;
-
-            // Detect current network instead of forcing Optimism
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const network = await provider.getNetwork();
-            const chainId = network.chainId;
-            console.log("Connected on Chain ID:", chainId);
-
-            // Update UI
-            updateWalletDisplay();
-            await updateChainIcon(chainId);
             await displayContractAddress(chainId);
+            if (request !== generation) return;
             await displayAirdropTimeline();
-
-            // Update wallet button style
-            walletButton.classList.add("connected");
-            walletButton.classList.remove("disconnected");
-
-            console.log("Wallet Connected:", walletAddress);
-
-            // Update tokens dropdown
-            if (typeof window.updateTokenDropdown === "function") {
-                window.updateTokenDropdown();
-            }
+            if (request !== generation) return;
+            if (typeof window.updateNativeCurrency === 'function') await window.updateNativeCurrency();
+            if (request !== generation) return;
+            if (typeof window.updateTokenDropdown === 'function') await window.updateTokenDropdown();
         } catch (error) {
-            console.error("Error connecting wallet:", error);
-
-            // Ensure button reflects disconnection
-            walletButton.classList.remove("connected");
-            walletButton.classList.add("disconnected");
+            if (request === generation) document.getElementById('status').textContent = `Network refresh unavailable: ${error.message}`;
         }
     };
-
-    connectWalletButton.addEventListener("click", connectWallet);
-
-    /** 🔹 Detect the current chain before wallet is connected */
-    if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
+    DecentHead.on('wallet', state => { void update(state); });
+    button.addEventListener('click', async () => {
         try {
-            const network = await provider.getNetwork();
-            const chainId = network.chainId;
-            console.log("Detected Chain ID:", chainId);
-
-            await updateChainIcon(chainId);
-            await displayContractAddress(chainId);
+            if (session.snapshot().connected) session.forget();
+            else await session.connect();
         } catch (error) {
-            console.error("Error detecting initial chain:", error);
+            document.getElementById('status').textContent = `Wallet connection failed: ${error.message}`;
         }
-
-        /** 🔹 Handle chain changes */
-        window.ethereum.on("chainChanged", async () => {
-            console.log("Chain changed!");
-            await handleChainSwitch();
-        });
-    }
-
+    });
+    void update(session.snapshot());
 });

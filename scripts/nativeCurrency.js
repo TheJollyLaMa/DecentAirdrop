@@ -6,11 +6,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Function to set the native coin symbol and icon
     const updateNativeCurrency = async () => {
-        const chainId = await detectChain();
+        const chainId = window.DecentHead?.getWallet().snapshot().connected ? await detectChain() : null;
 
         let nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" }; // Default to ETH
         switch (chainId) {
             case 1:  // Ethereum Mainnet
+            case 8453: // Base
                 nativeCoin = { name: "ETH", icon: "./assets/Eth.gif" };
                 break;
             case 137: // Polygon
