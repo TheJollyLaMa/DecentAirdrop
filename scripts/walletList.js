@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "🗑️";
         deleteButton.classList.add("delete-button");
+        deleteButton.type = "button";
         deleteButton.addEventListener("click", () => {
             walletDiv.remove();
             const index = walletAddresses.indexOf(walletInput.value);
@@ -52,6 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Attach event listener to Add Wallet Button
     addWalletButton.addEventListener("click", addWalletInput);
+    walletsContainer.querySelector(".delete-button")?.addEventListener("click", event => {
+        event.currentTarget.closest(".wallet-input-container").remove();
+        updateTally();
+    });
 
     // Expose walletAddresses globally (optional for debugging)
     window.walletAddresses = walletAddresses;

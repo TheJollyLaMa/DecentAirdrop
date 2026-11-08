@@ -1,46 +1,24 @@
-import { detectChain, formatTransactionHash } from "./helpers.js";
+import { detectChain } from "./helpers.js";
+import { NETWORKS, deployedNetwork } from "./networks.mjs";
 
 const eventsContainer = document.getElementById("airdrop-events");
 
-// Contract Addresses per Network
-const CONTRACT_ADDRESSES = {
-    1: "0x??????????????????????????????????????ETH", // Ethereum Mainnet
-    10: "0x48Fa7CC60950783820c22392c6F9127cd4eA30f9", // Optimism
-    137: "0x64717B442c6ff1F2f71da09e11ABa7946EE4C5FD",  // Polygon
-    24734: "0x5436865bF0aC7470d16C14f6B6E6e0F59333A5c9" //MintMe
-};
-
-// Block Explorers per Network
-const BLOCK_EXPLORERS = {
-    1: "https://etherscan.io/",
-    10: "https://optimistic.etherscan.io/",
-    137: "https://polygonscan.com/",
-    24734: "https://www.mintme.com/explorer/"
-};
-
 export async function displayAirdropTimeline() {
     try {
-        if (!window.ethereum) {
+        if (!(window.DecentHead?.getWallet().rawProvider || window.ethereum)) {
             console.error("MetaMask is not installed!");
             eventsContainer.innerHTML = "<p class='neon-text'>MetaMask is required to view the airdrop events.</p>";
             return;
         }
 
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const provider = new ethers.providers.Web3Provider(window.DecentHead?.getWallet().rawProvider || window.ethereum, 'any');
         const chainId = await detectChain();
-        const contractAddress = CONTRACT_ADDRESSES[chainId];
-
-        if (!contractAddress) {
-            console.error("No contract available for this chain.");
-            return;
-        }
+        const contractAddress = deployedNetwork(chainId).address;
 
         // Restore original ABI fetch method
-        const repoName = "DecentAirdrop";
-        const basePath = window.location.origin.includes("github.io")
-            ? `/${repoName}/data/Airdrop.json`
-            : "../data/Airdrop.json";
-        const airdropABI = await fetch(basePath).then((res) => res.json());
+        const response = await fetch(new URL("../data/Airdrop.json", import.meta.url));
+        if (!response.ok) throw new Error(`Could not load ABI (${response.status}).`);
+        const airdropABI = await response.json();
 
         const contract = new ethers.Contract(contractAddress, airdropABI, provider);
 
@@ -48,7 +26,7 @@ export async function displayAirdropTimeline() {
         console.log("Latest Block:", latestBlock);
 
         // Set a safe block range (reverting to original range)
-        const fromBlock = latestBlock - 5000;
+        const fromBlock = Math.max(0, latestBlock - 5000);
 
         const nativeAirdropEvents = await contract.queryFilter(
             contract.filters.NativeAirdropSent(),
@@ -74,13 +52,12 @@ export async function displayAirdropTimeline() {
 
         eventsContainer.innerHTML = "<h3 class='neon-text'>Airdrop Event Timeline</h3>";
 
-        allEvents.forEach(async (event, index) => {
-            const blockExplorer = BLOCK_EXPLORERS[chainId] || "#";
+        for (const [index, event] of allEvents.entries()) {
+            const blockExplorer = NETWORKS[chainId].explorer;
             const eventType = event.event;
             const campaignName = event.args.campaignName || "Unknown Campaign";
             const recipients = event.args.recipients.length;
             const txHash = event.transactionHash;
-            const formatTransactionHash = formatTransactionHash(txHash);
 
             const block = await provider.getBlock(event.blockNumber);
             const eventTimestamp = new Date(block.timestamp * 1000).toLocaleString();
@@ -89,15 +66,18 @@ export async function displayAirdropTimeline() {
             const eventCard = document.createElement("div");
             eventCard.classList.add("event-card");
 
-            eventCard.innerHTML = `
-                <div class="event-content">
-                    <p><strong>Event:</strong> ${eventType}</p>
-                    <p><strong>Campaign:</strong> ${campaignName}</p>
-                    <p><strong>Recipients:</strong> ${recipients} addresses</p>
-                    <p><strong>Date:</strong> ${eventTimestamp}</p>
-                    <p><a href="${blockExplorer}tx/${txHash}" target="_blank" class="neon-link">View Transaction: ${formattedTransactionHash}</a></p>
-                </div>
-            `;
+            for (const text of [`Event: ${eventType}`, `Campaign: ${campaignName}`, `Recipients: ${recipients} addresses`, `Date: ${eventTimestamp}`]) {
+                const paragraph = document.createElement("p");
+                paragraph.textContent = text;
+                eventCard.append(paragraph);
+            }
+            const link = document.createElement("a");
+            link.href = `${blockExplorer}tx/${txHash}`;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.className = "neon-link";
+            link.textContent = `View transaction: ${txHash}`;
+            eventCard.append(link);
 
             eventsContainer.appendChild(eventCard);
 
@@ -108,11 +88,11 @@ export async function displayAirdropTimeline() {
                 separator.innerHTML = `⸬<img src="./assets/umbrella_transparent.png" class="timeline-icon">⸬`;
                 eventsContainer.appendChild(separator);
             }
-        });
+        }
 
         console.log("Airdrop events displayed successfully.");
     } catch (error) {
         console.error("Error fetching airdrop events:", error);
-        eventsContainer.innerHTML = `<p class='error-text'>Error fetching airdrop events. Please try again later.</p>`;
+        eventsContainer.textContent = `Could not load airdrop history: ${error.message}`;
     }
 }

@@ -9,8 +9,10 @@
   <link rel="stylesheet" href="styles/components.css">
 </head>
 <body>
+  <decent-header></decent-header>
+  <script type="module" src="./decent-head.js"></script>
   <!-- Title and Wallet Display -->
-  <header class="header">
+  <header class="header" hidden style="display:none">
     <div class="centered-title">
       <div class="title">
         <img src="./assets/umbrella_transparent.png" alt="umbrella" class="favicon">
@@ -47,7 +49,7 @@
             <div id="native-currency-section" class="native-currency-container">
                 <div class="native-coin-display">
                     <img src="./assets/Eth.gif" alt="Native Coin Icon" class="native-coin-icon" />
-                    <input type="number" id="native-coin-amount" placeholder="Enter amount" />
+                    <input type="text" inputmode="decimal" id="native-coin-amount" placeholder="Enter amount" aria-label="Native amount per recipient" />
                     <span id="native-coin-symbol">ETH</span>
                 </div>
             </div>
@@ -57,9 +59,9 @@
             <div id="tokens-container">
                 <div class="token-input-container">
                     <img src="./assets/Eth.gif" alt="Token Icon" class="token-icon dropdown-icon" />
-                    <input type="text" placeholder="Token Amount" />
+                    <input type="text" inputmode="decimal" placeholder="Token Amount" aria-label="Token amount per recipient" />
                     <select id="tokens-dropdown" class="tokens-dropdown"></select>
-                    <button class="delete-button">🗑️</button>
+                    <button type="button" class="delete-button">🗑️</button>
                 </div>
             </div>
             
@@ -70,7 +72,7 @@
             <div id="wallets-container">
                 <div class="wallet-input-container">
                     <input type="text" placeholder="Enter Wallet Address" />
-                    <button class="delete-button">🗑️</button>
+                    <button type="button" class="delete-button">🗑️</button>
                 </div>
             </div>
             <button type="button" id="add-wallet">Add Wallet</button>
@@ -94,13 +96,14 @@
             <br><hr><br>    
 
             <!-- Send Airdrop Button -->
-            <button type="button" id="send-airdrop">Send Airdrop</button>
+            <button type="button" id="prepare-airdrop">Prepare only (no transactions)</button>
+            <button type="button" id="send-airdrop">Review and send airdrop</button>
             <!-- Contract Address Display -->
             <div id="contract-address-display"><!-- This will be dynamically populated --></div>
         
         </form>
 
-        <p id="status"></p>
+        <p id="status" role="status" aria-live="polite"></p>
     
     </div>
 
